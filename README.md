@@ -1,7 +1,6 @@
 # Masters_Thesis
----
-This is a repository of all the R code used in my master's thesis project.
----
+This is a repository of all the R code used in my master's thesis project submitted to University of Stellenbosch in South Africa. The full title is  as follows:
+
 #Spatio-Temporal Dynamics in Adaptive Multispecies Competitive communities
 ---
 
