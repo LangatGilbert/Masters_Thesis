@@ -1,6 +1,4 @@
 # Masters_Thesis
-# Spatio-Temporal Dynamics in Adaptive Multispecies Competitive Communities
-<<<<<<< HEAD
 ---
 title: "Spatio-Temporal Dynamics in Adaptive Multispecies Competitive communities"
 output: html_document
