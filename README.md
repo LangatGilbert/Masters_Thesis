@@ -1,7 +1,8 @@
 # Masters_Thesis
+---
 This is a repository of all the R code used in my master's thesis project.
 ---
-##Spatio-Temporal Dynamics in Adaptive Multispecies Competitive communities
+#Spatio-Temporal Dynamics in Adaptive Multispecies Competitive communities
 ---
 
 ```{r setup, include=FALSE}
