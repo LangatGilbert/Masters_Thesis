@@ -5,7 +5,7 @@ Spatio-Temporal Dynamics in Adaptive Multispecies Competitive communities
 ---
 Key files:
 * ```Eigenvalues_distn.R ``` -> Fuctions for eigenvalues distribution visualization.
-* ```MetaCommunity_Fuctions.R``` -> Functions for implementing the metacommunity adaptive model. Three functions have been written for **Elimination-Dispersal switching**, **Optimization-Dispersal switching** and **Non-switching-Dispersal**. 
+* ```MetaCommunity_Fuctions.R``` -> Functions for implementing the metacommunity adaptive model. Three functions have been written for *Elimination-Dispersal switching*, *Optimization-Dispersal switching* and *Non-switching-Dispersal*. 
 * ``` MetaCommunity_Simulation.R``` -> Implements the metacommunity fuctions developed in ```MetaCommunity_Fuctions.R```
 * ```Single_Community_Functions.R``` -> Contains fuctions written for switching implementation in a single community. The two switching forms plus stability fuctions written
 * ```Single_Community_Simulation.R``` -> Simulations for single community are done by calling ```Single_Community_Functions.R```. Single community dynamics visualization is done. 
