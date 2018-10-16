@@ -23,51 +23,50 @@ setwd("E:/MSC/Code Repo/MastersCode")
 #############################################################
 # 
 NoSpatial_LVM <- function(t,pop,Meta_Interaction_Matrix,Meta_Strength_Matrix,carry_cap,int_growth,site){ 
-   
-   dN_LVM=int_growth*pop*((carry_cap-(Meta_Interaction_Matrix[,,site]*Meta_Strength_Matrix[,,site])%*%pop)/carry_cap)
-   return(dN_LVM)
-   }
+  
+  dN_LVM=int_growth*pop*((carry_cap-(Meta_Interaction_Matrix[,,site]*Meta_Strength_Matrix[,,site])%*%pop)/carry_cap)
+  return(dN_LVM)
+}
 
 
 #############################################################
 #LVM funtion implementation  of NOn switching on EULER
 #############################################################
 
- NonSpatial_euler_meth = function( t_int, y_int, stepsize, t_end,Meta_Interaction_Matrix,Meta_Strength_Matrix,carry_cap,int_growth,site){      
- 
+NonSpatial_euler_meth = function( t_int, y_int, stepsize, t_end,Meta_Interaction_Matrix,Meta_Strength_Matrix,carry_cap,int_growth,site){      
+  
   m = length(y_int)+1
-# Number of steps and creation of output matrix
-
+  # Number of steps and creation of output matrix
+  
   nsteps = ceiling((t_end-t_int)/stepsize)
   Y_out = array(dim=c(nsteps+1,m,sites))
   
   Y_out[1,,1] =Y_out[1,,2]=Y_out[1,,3]=c(t_int, y_int)
-
+  
   ## loop for implementing the function over nsteps
   for (i in 1:nsteps) {
-
+    
     for(site in 1:sites){
       
-
+      
       Y_out[i+1,,site]= Y_out[i,,site]+ stepsize*c(1, NoSpatial_LVM(Y_out[i,1,site],Y_out[i,2:m,site],Meta_Interaction_Matrix,Meta_Strength_Matrix,carry_cap,int_growth,site))
-
+      
     }
-    }
-  return(Y_out)
   }
+  return(Y_out)
+}
 
 ###########################################################################
 # Spatial Lotka-Volterra competition model
 
-Spatial_LVM <- function(t,pop,Meta_Interaction_Matrix,Meta_Strength_Matrix,carry_cap,int_growth,Original_pop,Emigration_Prop,site){ 
+Spatial_LVM <- function(t,pop,Meta_Interaction_Matrix,Meta_Strength_Matrix,carry_cap,int_growth,Original_pop,site){ 
   
   dN=int_growth*pop*((carry_cap-(Meta_Interaction_Matrix[,,site]*Meta_Strength_Matrix[,,site])%*%pop)/carry_cap)+
-    #-Emigration_Prop[site,site]*pop + t((Emigration_Prop*Mortality)[site,]%*%t(Original_pop))
-    t((Emigration_Prop*Mortality)[site,]%*%t(Original_pop))
+    d*(rowSums(Original_pop[,-site])- 2*(Original_pop[,site]))
   
   return(dN)
   
-  }
+}
 
 #####
 #Sampling fuction 
@@ -84,7 +83,7 @@ sample_g <- function(x) {
 ##############################################################
 #LVM funtion implementation  of NOn switching on EULER
 #############################################################
-Spatial_euler_meth = function( t_int, y_int, stepsize, t_end,Meta_Interaction_Matrix,Meta_Strength_Matrix,carry_cap,int_growth,Original_pop,Emigration_Prop,site){      
+Spatial_euler_meth = function( t_int, y_int, stepsize, t_end,Meta_Interaction_Matrix,Meta_Strength_Matrix,carry_cap,int_growth,Original_pop,site){      
   
   m = length(y_int)+1
   
@@ -94,14 +93,11 @@ Spatial_euler_meth = function( t_int, y_int, stepsize, t_end,Meta_Interaction_Ma
   # dimensions of output matrix
   Y_out = array(dim=c(nsteps+1,m,sites))
   Y_out[1,,1] =Y_out[1,,2]=Y_out[1,,3]=c(t_int, y_int)
-  #Y_out[1,,1] =Y_out[1,,2]=Y_out[1,,3]=Y_out[1,,4]=Y_out[1,,5]= c(t_int, y_int)
-   #Y_out[1,,2] = c(t_int, y_int)
-   #Y_out[1,,3] = c(t_int, y_int)
-   #Y_out[1,,3] = c(t_int, y_int)
-   
+  
   #Updating the population densities at the start of each step
   updated_pop= y_int
   updated_Originalpop =Original_pop
+  
   
   # loop for implementing the Euler function over nsteps(time steps)
   for (i in 1:nsteps) {
@@ -113,24 +109,24 @@ Spatial_euler_meth = function( t_int, y_int, stepsize, t_end,Meta_Interaction_Ma
       
       #Y_out[1,,site] = c(t_int, y_int)
       
-      Y_out[i+1,,site]= Y_out[i,,site]+ stepsize*c(1, Spatial_LVM(Y_out[i,1,site],Y_out[i,2:m,site],Meta_Interaction_Matrix,Meta_Strength_Matrix,carry_cap,int_growth,Original_pop,Emigration_Prop,site))
+      Y_out[i+1,,site]= Y_out[i,,site]+ stepsize*c(1, Spatial_LVM(Y_out[i,1,site],Y_out[i,2:m,site],Meta_Interaction_Matrix,Meta_Strength_Matrix,carry_cap,int_growth,Original_pop,site))
       
       updated_pop= Y_out[i+1,2:m,site]
-     
-    
+      
+      
     }
     updated_Originalpop=Y_out[i+1,2:m,]
-    }
+  }
   
   return(Y_out)
-
-  }
+  
+}
 
 #########################################################
 ##LVM funtion implementation  of Elimination switching algorithm on EULER
 # #########################################################
 #
-Meta_euler_meth_elimination_switch = function(t_int, y_int, stepsize, t_end,Meta_Interaction_Matrix,Meta_Strength_Matrix,carry_cap,int_growth,Original_pop,Emigration_Prop,site){
+Meta_euler_meth_elimination_switch = function(t_int, y_int, stepsize, t_end,Meta_Interaction_Matrix,Meta_Strength_Matrix,carry_cap,int_growth,Original_pop,site){
   
   m = length(y_int)+1
   ## Number of steps and creation of output matrix
@@ -139,11 +135,7 @@ Meta_euler_meth_elimination_switch = function(t_int, y_int, stepsize, t_end,Meta
   Y_out = array(dim=c(nsteps+1,m,sites))
   
   Y_out[1,,1]=Y_out[1,,2]=Y_out[1,,3]= c(t_int, y_int)
-  #Y_out[1,,2] = c(t_int, y_int)
-  #Y_out[1,,3] = c(t_int, y_int)
-  #Y_out[1,,4] = c(t_int, y_int)
-  #Y_out[1,,5] = c(t_int, y_int)
-  #Y_out[1,,1] =Y_out[1,,2]=Y_out[1,,3]=Y_out[1,,4]=Y_out[1,,5]= c(t_int, y_int)
+  
   #Updating the population after each timestep
   current_pop=y_int
   current_Originalpop=Original_pop
@@ -152,12 +144,9 @@ Meta_euler_meth_elimination_switch = function(t_int, y_int, stepsize, t_end,Meta
   
   for (i in 1:nsteps) {
     
-   
+    
     # loop over the number of patches
     for(site in 1:sites){
-      
-      
-      #Y_out[1,,site] = c(t_int, y_int)
       
       ###############################################
       # Elimination switching rule implemention
@@ -165,9 +154,6 @@ Meta_euler_meth_elimination_switch = function(t_int, y_int, stepsize, t_end,Meta
       
       #Community matrix
       Meta_Elim_Intstr=(Meta_Interaction_Matrix[,,site]*Meta_Strength_Matrix[,,site])* current_pop
-      
-      #switching_elim=1
-      #while(switching_elim<=5){
       
       # Ensuring the selected species interacts with more than one species
       
@@ -179,21 +165,15 @@ Meta_euler_meth_elimination_switch = function(t_int, y_int, stepsize, t_end,Meta
         if (sum(Meta_Interaction_Matrix[,,site][j_elim,])< S){
           break
         }
-        }
+      }
       
+      #the vector selected based on overal commnity matrix
       Vec_elim=Meta_Elim_Intstr[j_elim,]
-      ##########################
-      # New_Vec_elim = Vec_elim
-      # ## Ensuring the maximum value picked is not on the main diagonal
-      # k=sort(New_Vec_elim)[(S-1)]
-      # Next_max=which(Vec_elim==j)
-      # j=sample_g(Next_max)
-      #########################
       
       # Selecting maximum value not on the main diagonal
       
-      Vec_elim1=((Meta_Interaction_Matrix_Offdiag[,,site]*Meta_Strength_Matrix[,,site])* current_pop)[j_elim,]
-      j=which(Vec_elim1 == max(Vec_elim1))
+      Max_Vec_elim=((Meta_Interaction_Matrix[,,site]*OffDiag_Strmat)* current_pop)[j_elim,]
+      j=which(Max_Vec_elim == max(Max_Vec_elim))
       
       # Check the position of all zeros and sample 1 element
       
@@ -204,31 +184,27 @@ Meta_euler_meth_elimination_switch = function(t_int, y_int, stepsize, t_end,Meta
       
       Meta_Interaction_Matrix[,,site][j_elim,c(j,f)]= Meta_Interaction_Matrix[,,site][j_elim,c(f,j)]
       
-      #switching_elim=switching_elim+1
-      
-      #} # End of repeated loop of switches
-      
       # Euler iteration
       
-      Y_out[i+1,,site]= Y_out[i,,site]+ stepsize*c(1, Spatial_LVM(Y_out[i,1,site],Y_out[i,2:m,site],Meta_Interaction_Matrix,Meta_Strength_Matrix,carry_cap,int_growth,Original_pop,Emigration_Prop,site))
+      Y_out[i+1,,site]= Y_out[i,,site]+ stepsize*c(1, Spatial_LVM(Y_out[i,1,site],Y_out[i,2:m,site],Meta_Interaction_Matrix,Meta_Strength_Matrix,carry_cap,int_growth,Original_pop,site))
       current_pop= Y_out[i+1,2:m,site]
       
-    
-      }
-    current_Originalpop = Y_out[i+1,2:m,]
+      
     }
+    current_Originalpop = Y_out[i+1,2:m,]
+  }
   
   return(Y_out)
   
-
-  }# End of function
+  
+}# End of function
 
 ###############################################################################
 # Optimization switching euler simulation
 
 ##############################################################################
 
-Meta_euler_meth_optimization_switch = function(t_int, y_int, stepsize, t_end,Meta_Interaction_Matrix,Meta_Strength_Matrix,carry_cap,int_growth,Original_pop,Emigration_Prop,site){
+Meta_euler_meth_optimization_switch = function(t_int, y_int, stepsize, t_end,Meta_Interaction_Matrix,Meta_Strength_Matrix,carry_cap,int_growth,Original_pop,site){
   
   m = length(y_int)+1
   
@@ -240,12 +216,7 @@ Meta_euler_meth_optimization_switch = function(t_int, y_int, stepsize, t_end,Met
   Y_out = array(dim=c(nsteps+1,m,sites))
   
   Y_out[1,,1] =Y_out[1,,2]=Y_out[1,,3]= c(t_int, y_int)
-  #Y_out[1,,2] = c(t_int, y_int)
-  #Y_out[1,,3] = c(t_int, y_int)
-  #Y_out[1,,4] = c(t_int, y_int)
-  #Y_out[1,,5] = c(t_int, y_int)
   
-  #Y_out[1,,1] =Y_out[1,,2]=Y_out[1,,3]=Y_out[1,,4]=Y_out[1,,5]= c(t_int, y_int)
   #Updating species population at end of each time step
   new_pop=y_int
   new_Originalpop=Original_pop
@@ -256,9 +227,6 @@ Meta_euler_meth_optimization_switch = function(t_int, y_int, stepsize, t_end,Met
     
     for (site in 1:sites){
       
-      
-      #Y_out[1,,site] = c(t_int, y_int)
-      
       ############################################
       # Optimization switching rule implementation at each time step
       ############################################
@@ -267,11 +235,6 @@ Meta_euler_meth_optimization_switch = function(t_int, y_int, stepsize, t_end,Met
       
       Opt_Intstr=(Meta_Interaction_Matrix[,,site]*Meta_Strength_Matrix[,,site])*new_pop
       
-      # switch repeatedly a number of times at each time step
-      
-      #switching_opt=1
-      #while(switching_opt<=5){
-      
       # Select species interaction with more than one partner
       
       repeat{
@@ -279,17 +242,17 @@ Meta_euler_meth_optimization_switch = function(t_int, y_int, stepsize, t_end,Met
         introwsums_greater=which(IntRowsums>2,arr.ind = T)
         if (length(introwsums_greater)>1){
           j_opt= sample_g(introwsums_greater)
-          }
+        }
         else{
           j_opt=introwsums_greater
           
-          }
+        }
         
         if (sum(Meta_Interaction_Matrix[,,site][j_opt,])< S){
           break
-        
+          
         }
-        }
+      }
       
       #the selected vector
       Vec_opt= Opt_Intstr[j_opt,]
@@ -307,8 +270,7 @@ Meta_euler_meth_optimization_switch = function(t_int, y_int, stepsize, t_end,Met
       # Checking if switching increase the species growth
       
       dN_switch_Original=int_growth*new_pop*((carry_cap-(Meta_Interaction_Matrix[,,site]*Meta_Strength_Matrix[,,site])%*%new_pop)/carry_cap)
-        #-Emigration_Prop[site,site]*new_pop + t((Emigration_Prop*Mortality)[site,]%*%t(new_Originalpop))
-     + t((Emigration_Prop*Mortality)[site,]%*%t(new_Originalpop))
+      +d*(rowSums(Original_pop[,-site])- 2*(Original_pop[,site]))
       
       enter=TRUE
       while(enter==TRUE){
@@ -324,18 +286,14 @@ Meta_euler_meth_optimization_switch = function(t_int, y_int, stepsize, t_end,Met
         Meta_Strength_Matrix[,,site][j_opt,c(k_opt,m_opt)]=Meta_Strength_Matrix[,,site][j_opt,c(m_opt,k_opt)]
         
         dN_switch=int_growth*new_pop*((carry_cap-(Meta_Interaction_Matrix[,,site]*Meta_Strength_Matrix[,,site])%*%new_pop)/carry_cap)+ 
-          #-Emigration_Prop[site,site]*new_pop + t((Emigration_Prop*Mortality)[site,]%*%t(new_Originalpop))
-          t((Emigration_Prop*Mortality)[site,]%*%t(new_Originalpop))
+          d*(rowSums(Original_pop[,-site])- 2*(Original_pop[,site]))
         
-       # (!is.null(element) && length(element) > 0 && otherCondition)
-        # if ( !is.null(dN_switch[j_opt]-dN_switch_Original[j_opt])
-        #      && !is.na(dN_switch[j_opt]-dN_switch_Original[j_opt])
-        #      && length(dN_switch[j_opt]-dN_switch_Original[j_opt])>0  
-        #      && (dN_switch[j_opt]-dN_switch_Original[j_opt])>0){
-        if ( (dN_switch[j_opt] - dN_switch_Original[j_opt])>0
-             && length(dN_switch[j_opt]-dN_switch_Original[j_opt])>0 ){
+        if ( (dN_switch[j_opt]-dN_switch_Original[j_opt]) > 0 
+             && length(dN_switch[j_opt]-dN_switch_Original[j_opt])>0 
+             &&!is.null(dN_switch[j_opt]-dN_switch_Original[j_opt])
+             && !is.na(dN_switch[j_opt]-dN_switch_Original[j_opt])){
           enter=FALSE
-          }
+        }
         
         else{
           
@@ -348,34 +306,30 @@ Meta_euler_meth_optimization_switch = function(t_int, y_int, stepsize, t_end,Met
           
           if (length(j_m)==0){
             enter=FALSE
+            
+          }
           
-            }
+        }#End of else loop
         
-          }#End of else loop
-      
-        } #End of while loop
+      } #End of while loop
       
       
-      #switching_opt=switching_opt+1
-      
-      #} #End of repeated switching
-
       # Euler iteration over nsteps 
       
-      Y_out[i+1,,site]= Y_out[i,,site]+ stepsize*c(1, Spatial_LVM(Y_out[i,1,site],Y_out[i,2:m,site],Meta_Interaction_Matrix,Meta_Strength_Matrix,carry_cap,int_growth,Original_pop,Emigration_Prop,site))
+      Y_out[i+1,,site]= Y_out[i,,site]+ stepsize*c(1, Spatial_LVM(Y_out[i,1,site],Y_out[i,2:m,site],Meta_Interaction_Matrix,Meta_Strength_Matrix,carry_cap,int_growth,Original_pop,site))
       new_pop= Y_out[i+1,2:m,site]
       
-    
+      
     }
     
     new_Originalpop=Y_out[i+1,2:m,]
-  
-    } # End of site loop
+    
+  } # End of site loop
   
   return(Y_out)
   
-
-  }# End of time iteration loop
+  
+}# End of time iteration loop
 
 #################################################
 #Stability computation function 
@@ -386,24 +340,27 @@ Meta_euler_meth_optimization_switch = function(t_int, y_int, stepsize, t_end,Met
 Modified_Spatial_LVM_stab <- function(pop){ 
   
   dN_Spatial_stab=int_growth*pop*((carry_cap-(IM*SM)%*%pop)/carry_cap) 
-  #-Emigration_Prop[site,site]*pop + t((Emigration_Prop*Mortality)[site,]%*%t(Original_pop))
-    + t((Emigration_Prop*Mortality)[site,]%*%t(Original_pop))
+  + d*(rowSums(Original_pop[,-site])- 2*(Original_pop[,site]))
+  
   
   return(dN_Spatial_stab)
-
-  }
+  
+}
 
 #Non-spatial case
 Modified_NoSpatial_LVM <- function(pop){ 
   
   dN_NonSpatial=int_growth*pop*((carry_cap-(IM*SM)%*%pop)/carry_cap)
   return(dN_NonSpatial)
-
-  }
+  
+}
 
 ######################################################################################################
 # SAVING THE FUNCTIONS 
 save(Spatial_LVM,Spatial_euler_meth,Meta_euler_meth_elimination_switch,Meta_euler_meth_optimization_switch,
-     Modified_NoSpatial_LVM,Modified_Spatial_LVM_stab,sample_g,file="Spatialmodelfuctions.RData")
+     Modified_NoSpatial_LVM,Modified_Spatial_LVM_stab,sample_g,file="MetacommunityFunctions.RData")
 
-##NoSpatial_LVM,NonSpatial_euler_meth,
+##NoSpatial_LVM,NonSpatial_euler_meth
+
+#-Emigration_Prop[site,site]*pop + t((Emigration_Prop*Mortality)[site,]%*%t(Original_pop))
+#t((Emigration_Prop*Mortality)[site,]%*%t(Original_pop))
