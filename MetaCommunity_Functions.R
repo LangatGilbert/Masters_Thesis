@@ -360,7 +360,4 @@ Modified_NoSpatial_LVM <- function(pop){
 save(Spatial_LVM,Spatial_euler_meth,Meta_euler_meth_elimination_switch,Meta_euler_meth_optimization_switch,
      Modified_NoSpatial_LVM,Modified_Spatial_LVM_stab,sample_g,file="MetacommunityFunctions.RData")
 
-##NoSpatial_LVM,NonSpatial_euler_meth
 
-#-Emigration_Prop[site,site]*pop + t((Emigration_Prop*Mortality)[site,]%*%t(Original_pop))
-#t((Emigration_Prop*Mortality)[site,]%*%t(Original_pop))

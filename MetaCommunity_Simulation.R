@@ -436,5 +436,5 @@ save(Meta_Non_Switching,Meta_elimination_switch,Meta_optimization_switch,Abundan
      GlobalStability_data,AbundanceCommunity_data,Local_Stability_data,Global_Productivity_data,
      Total_Abundance_Elim_data,Total_Abundance_Opt_data,Total_Abundance_Nonswitch_data, file="FullMetacommunity.RData")
 
-##
+##Loading Data
 #load("FullMetacommunity.RData")
